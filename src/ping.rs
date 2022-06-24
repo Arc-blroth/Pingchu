@@ -1,7 +1,7 @@
 use anyhow::{Context as AnyhowContext, Error, Result};
 use itertools::Itertools;
 use lazy_static::lazy_static;
-use poise::serenity_prelude::{Context, Member, Mentionable, Permissions, RoleId, Timestamp};
+use poise::serenity_prelude::{Context, GuildId, Member, Mentionable, Permissions, RoleId, Timestamp, UserId};
 use poise::{BoxFuture, Event, FrameworkContext};
 use regex::Regex;
 use sea_orm::entity::Iterable;
@@ -91,7 +91,7 @@ pub fn ping_listener<'a>(
                                 .log_channel
                                 .send_message(&ctx.http, |msg| {
                                     msg.add_embed(|embed| {
-                                        commands::apply_ui(embed, Some(new_message));
+                                        commands::apply_ui(embed, Some(&new_message.author), new_message.timestamp);
                                         embed
                                             .title(format!("_{} pinged @everyone!_", member.display_name()))
                                             .url(new_message.link())
@@ -101,7 +101,7 @@ pub fn ping_listener<'a>(
                                                 false,
                                             )
                                             .field("Author", new_message.author.mention(), true)
-                                            .field("Pings", last_pings + pings as u32, true);
+                                            .field("Total Pings", last_pings + pings as u32, true);
                                         if let Some(time) = last_global {
                                             embed.field(
                                                 "Time since last @everyone",
@@ -131,8 +131,8 @@ pub fn ping_listener<'a>(
     })
 }
 
-pub async fn member_ping_info(pingchu: &Pingchu, member: &Member) -> Result<Option<guild_ping::Model>> {
-    guild_ping::Entity::find_by_id((member.guild_id.0 as i64, member.user.id.0 as i64))
+pub async fn member_ping_info(pingchu: &Pingchu, guild: GuildId, user: UserId) -> Result<Option<guild_ping::Model>> {
+    guild_ping::Entity::find_by_id((guild.0 as i64, user.0 as i64))
         .one(&pingchu.database)
         .await
         .context("Couldn't fetch member ping history")
@@ -150,7 +150,7 @@ async fn everyone_ping_history(
         .context("Couldn't fetch guild ping history")?
         .and_then(|x| x.last_everyone_ping);
 
-    let (last_member, pings) = member_ping_info(pingchu, member)
+    let (last_member, pings) = member_ping_info(pingchu, member.guild_id, member.user.id)
         .await?
         .map(|x| (x.last_everyone_ping, x.pings))
         .unwrap_or_default();

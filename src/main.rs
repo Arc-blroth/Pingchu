@@ -41,7 +41,7 @@ pub async fn main() -> Result<()> {
 
     Framework::build()
         .options(FrameworkOptions {
-            commands: vec![],
+            commands: vec![commands::pinginfo()],
             command_check: Some(allow_on_server),
             listener: ping::ping_listener,
             ..default()
