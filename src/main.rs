@@ -14,8 +14,8 @@ pub mod ping;
 pub mod utils;
 
 use std::default::default;
-use std::fs;
 use std::path::Path;
+use std::{env, fs};
 
 use anyhow::{anyhow, Context as AnyhowContext, Error, Result};
 use poise::builtins::create_application_commands;
@@ -83,7 +83,7 @@ fn read_token() -> Result<String> {
         Ok(token)
     } else {
         // read from .token if possible
-        let path = Path::new(".token");
+        let path = env::current_dir().unwrap().join(Path::new(".token"));
         if path.exists() {
             fs::read_to_string(path).context("Could not start the bot")
         } else {

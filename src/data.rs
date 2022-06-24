@@ -1,8 +1,8 @@
 pub mod guild_ping;
 
-use std::fs;
 use std::fs::File;
 use std::path::Path;
+use std::{env, fs};
 
 use anyhow::Result;
 use sea_orm::{ConnectionTrait, Database, DatabaseConnection, DbErr, ExecResult, Schema, StatementBuilder};
@@ -10,7 +10,7 @@ use sea_orm::{ConnectionTrait, Database, DatabaseConnection, DbErr, ExecResult, 
 pub const DB_FILE: &str = ".data/sqlite.db";
 
 pub async fn load_database() -> Result<DatabaseConnection> {
-    let path = Path::new(DB_FILE);
+    let path = env::current_dir().unwrap().join(Path::new(DB_FILE));
     if !path.exists() {
         fs::create_dir_all(path.parent().unwrap())?;
         File::create(path)?;

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
-use std::fs;
 use std::fs::File;
 use std::path::Path;
+use std::{env, fs};
 
 use anyhow::Result;
 use poise::serenity_prelude::{ActivityType, ChannelId, GuildId};
@@ -33,17 +33,17 @@ pub struct ServerConfig {
 }
 
 pub fn load_config() -> PingchuConfig {
-    let config_file = Path::new(CONFIG_FILE);
+    let config_file = env::current_dir().unwrap().join(Path::new(CONFIG_FILE));
 
     // Read config from disk
     let config = if config_file.exists() {
-        let result: Result<PingchuConfig> = try { serde_json::from_reader(File::open(config_file)?)? };
+        let result: Result<PingchuConfig> = try { serde_json::from_reader(File::open(&config_file)?)? };
         match result {
             Ok(config) => config,
             Err(err) => {
                 eprintln!(
                     "Couldn't load {} config, using defaults: {}",
-                    config_file.display(),
+                    &config_file.display(),
                     err
                 );
                 PingchuConfig::default()
@@ -56,11 +56,11 @@ pub fn load_config() -> PingchuConfig {
     // Write config back to disk
     // This ensures new properties are represented in the config file
     let write_result: Result<()> = try {
-        fs::create_dir_all(config_file.parent().unwrap())?;
-        serde_json::to_writer_pretty(File::create(config_file)?, &config)?
+        fs::create_dir_all(&config_file.parent().unwrap())?;
+        serde_json::to_writer_pretty(File::create(&config_file)?, &config)?
     };
     if let Err(err) = write_result {
-        eprintln!("Couldn't update {} config: {}", config_file.display(), err);
+        eprintln!("Couldn't update {} config: {}", &config_file.display(), err);
     }
 
     config
