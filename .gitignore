@@ -1,0 +1,12 @@
+# IDEs
+.idea/
+.vscode/
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# Rust
+target/
+
+# Pingchu
+.data/
+.token
