@@ -15,6 +15,7 @@ pub struct PingchuConfig {
     pub status: String,
     pub status_type: ActivityType,
     pub allowed_servers: HashMap<GuildId, ServerConfig>,
+    pub ping_responses: Vec<String>,
 }
 
 impl Default for PingchuConfig {
@@ -23,6 +24,28 @@ impl Default for PingchuConfig {
             status: "red bubbles".to_string(),
             status_type: ActivityType::Watching,
             allowed_servers: HashMap::new(),
+            ping_responses: [
+                "Hello!",
+                "Heyo!",
+                "Hi!",
+                "Hai!",
+                "Hewo!",
+                "Hey there, I'm Ping'chu!",
+                "@\u{200B}everyone",
+                "Did you just ping me?",
+                "WHOMST DARES PING ME",
+                "why ping",
+                "THAT TICKLES",
+                "hehe~",
+                "I've been booped!",
+                "beep boop",
+                "Can't catch me!",
+                "_Ping'chu uses Thunderbolt! It was very effective!_",
+                "_Ping'chu uses Thunderbolt! It wasn't very effective..._",
+            ]
+            .iter()
+            .map(|x| x.to_string())
+            .collect(),
         }
     }
 }

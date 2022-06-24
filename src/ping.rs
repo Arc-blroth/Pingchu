@@ -3,6 +3,7 @@ use itertools::Itertools;
 use lazy_static::lazy_static;
 use poise::serenity_prelude::{Context, GuildId, Member, Mentionable, Permissions, RoleId, Timestamp, UserId};
 use poise::{BoxFuture, Event, FrameworkContext};
+use rand::seq::SliceRandom;
 use regex::Regex;
 use sea_orm::entity::Iterable;
 use sea_orm::prelude::DateTimeUtc;
@@ -23,7 +24,7 @@ lazy_static! {
 pub fn ping_listener<'a>(
     ctx: &'a Context,
     event: &'a Event<'a>,
-    _framework: FrameworkContext<'a, Pingchu, Error>,
+    framework: FrameworkContext<'a, Pingchu, Error>,
     pingchu: &'a Pingchu,
 ) -> BoxFuture<'a, Result<()>> {
     Box::pin(async move {
@@ -120,6 +121,14 @@ pub fn ping_listener<'a>(
                                     })
                                 })
                                 .await?;
+                        } else if new_message.mentions.iter().any(|x| x.id == framework.bot_id) {
+                            let maybe_response = pingchu.config.ping_responses.choose(&mut rand::thread_rng()).cloned();
+                            if let Some(response) = maybe_response {
+                                new_message
+                                    .channel_id
+                                    .send_message(&ctx.http, |msg| msg.reference_message(new_message).content(response))
+                                    .await?;
+                            }
                         }
                     }
                 }
