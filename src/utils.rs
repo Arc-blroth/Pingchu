@@ -7,3 +7,7 @@ pub fn format_time_v1_duration(duration: Duration) -> String {
         .map(|x| format!("{}", humantime::format_duration(x)))
         .unwrap_or_else(|_| "<error: negative duration>".to_string())
 }
+
+pub fn check_uwu_support() -> bool {
+    is_x86_feature_detected!("sse4.1")
+}

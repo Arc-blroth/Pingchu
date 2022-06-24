@@ -4,6 +4,7 @@ use lazy_static::lazy_static;
 use poise::serenity_prelude::{Context, GuildId, Member, Mentionable, Permissions, RoleId, Timestamp, UserId};
 use poise::{BoxFuture, Event, FrameworkContext};
 use rand::seq::SliceRandom;
+use rand::Rng;
 use regex::Regex;
 use sea_orm::entity::Iterable;
 use sea_orm::prelude::DateTimeUtc;
@@ -122,11 +123,23 @@ pub fn ping_listener<'a>(
                                 })
                                 .await?;
                         } else if new_message.mentions.iter().any(|x| x.id == framework.bot_id) {
-                            let maybe_response = pingchu.config.ping_responses.choose(&mut rand::thread_rng()).cloned();
+                            let (maybe_response, should_uwu) = {
+                                // this is in a block since `ThreadRng` is `!Send`
+                                let mut rng = rand::thread_rng();
+                                (
+                                    pingchu.config.ping_responses.choose(&mut rng).cloned(),
+                                    pingchu.uwu_supported && rng.gen::<f64>() < pingchu.config.uwu_chance,
+                                )
+                            };
                             if let Some(response) = maybe_response {
+                                let content = if should_uwu {
+                                    uwuifier::uwuify_str_sse(&response)
+                                } else {
+                                    response
+                                };
                                 new_message
                                     .channel_id
-                                    .send_message(&ctx.http, |msg| msg.reference_message(new_message).content(response))
+                                    .send_message(&ctx.http, |msg| msg.reference_message(new_message).content(content))
                                     .await?;
                             }
                         }

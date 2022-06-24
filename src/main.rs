@@ -29,6 +29,7 @@ use crate::config::PingchuConfig;
 pub struct Pingchu {
     pub config: PingchuConfig,
     pub database: DatabaseConnection,
+    pub uwu_supported: bool,
 }
 
 pub type PingchuContext<'a> = Context<'a, Pingchu, Error>;
@@ -38,10 +39,20 @@ pub async fn main() -> Result<()> {
     let token = read_token()?;
     let config = config::load_config();
     let database = data::load_database().await.context("Couldn't load database!")?;
+    let uwu_supported = utils::check_uwu_support();
+    if !uwu_supported {
+        eprintln!("WARNING: YOUR CPU CANNOT HANDLE THE UWU, DISABLING UWU FEATURES");
+    }
 
     Framework::build()
         .options(FrameworkOptions {
-            commands: vec![commands::pinginfo()],
+            commands: {
+                let mut commands = vec![commands::pinginfo()];
+                if uwu_supported {
+                    commands.push(commands::uwuify());
+                }
+                commands
+            },
             command_check: Some(allow_on_server),
             listener: ping::ping_listener,
             ..default()
@@ -67,7 +78,11 @@ pub async fn main() -> Result<()> {
                     ready.user.name, ready.user.discriminator
                 );
 
-                Ok(Pingchu { config, database })
+                Ok(Pingchu {
+                    config,
+                    database,
+                    uwu_supported,
+                })
             })
         })
         .run()

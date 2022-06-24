@@ -80,3 +80,16 @@ pub async fn pinginfo(ctx: PingchuContext<'_>, #[description = "Target user."] u
     .context("Failed to reply to /pinginfo")?;
     Ok(())
 }
+
+#[poise::command(slash_command)]
+/// Uwuify text using the "fastest text uwuifier in the west."
+pub async fn uwuify(ctx: PingchuContext<'_>, #[description = "Text to uwuify."] text: String) -> Result<()> {
+    assert!(
+        ctx.data().uwu_supported,
+        "/uwuify shouldn't be registered if uwu is not supported"
+    );
+    ctx.say(uwuifier::uwuify_str_sse(&text))
+        .await
+        .context("Failed to reply to /uwuify")?;
+    Ok(())
+}

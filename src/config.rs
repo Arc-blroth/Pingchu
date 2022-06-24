@@ -16,6 +16,7 @@ pub struct PingchuConfig {
     pub status_type: ActivityType,
     pub allowed_servers: HashMap<GuildId, ServerConfig>,
     pub ping_responses: Vec<String>,
+    pub uwu_chance: f64,
 }
 
 impl Default for PingchuConfig {
@@ -46,6 +47,7 @@ impl Default for PingchuConfig {
             .iter()
             .map(|x| x.to_string())
             .collect(),
+            uwu_chance: 0.5,
         }
     }
 }
